@@ -68,7 +68,7 @@ public class QuizParser {
                             .lines()
                             .collect(Collectors.joining("\n"));
 
-                    return factory.createQuiz(name, href, type, indent, quizHtml);
+                    return factory.createQuiz(name, href, type, indent, removeSecureWindow(quizHtml));
                 }
 
             } catch (IOException e) {
@@ -77,5 +77,24 @@ public class QuizParser {
         }
 
         return factory.createQuiz(name, href, type, indent, "");
+    }
+
+    private static String removeSecureWindow(String html) {
+        Pattern secureWindowPattern = Pattern.compile("" +
+                "<script[^>]*>" +
+                "(?:(?!</script>)[\\s\\S])*" +
+                "M\\.mod_quiz\\.secure_window\\.init" +
+                "(?:(?!</script>)[\\s\\S])*" +
+                "</script>");
+        Matcher secureWindowMatcher = secureWindowPattern.matcher(html);
+
+        if(secureWindowMatcher.find()) {
+            int matchStart = secureWindowMatcher.start();
+            int matchEnd = secureWindowMatcher.end();
+
+            return html.substring(0, matchStart) + html.substring(matchEnd);
+        }
+
+        return html;
     }
 }
