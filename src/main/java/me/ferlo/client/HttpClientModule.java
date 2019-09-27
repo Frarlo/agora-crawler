@@ -11,6 +11,6 @@ public class HttpClientModule extends AbstractModule {
         bind(HttpClientService.class).to(LetsEncryptHttpClient.class);
         bind(HttpClientService.class)
                 .annotatedWith(Authenticated.class)
-                .to(LoggedInHttpClient.class);
+                .to(AuthenticatedHttpClient.class);
     }
 }

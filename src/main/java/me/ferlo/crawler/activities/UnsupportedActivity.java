@@ -2,27 +2,22 @@ package me.ferlo.crawler.activities;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
+import me.ferlo.crawler.download.DownloadService;
 
-import java.io.*;
+import java.nio.file.Path;
+import java.util.Collections;
 
-public class UnsupportedActivity extends Activity {
+public class UnsupportedActivity extends PageActivity {
 
-    @Inject UnsupportedActivity(@Assisted("name") String name,
-                                @Assisted("href") String href,
-                                @Assisted("type") String type,
-                                @Assisted("indent") int indent) {
-        super(name, href, type, indent);
+    @Inject UnsupportedActivity(DownloadService downloadService,
+                                @Assisted("baseData") BaseActivityData baseData) {
+        super(downloadService, baseData, "", Collections.emptyMap());
+        this.content = "'" + getType() + "' type is not supported";
     }
 
     @Override
-    public void writeInFolder(File folder) {
-        File file = new File(folder, "unsupported.html");
-
-        try (PrintStream out = new PrintStream(new FileOutputStream(file))) {
-            out.print("'" + getType() + "' type is not supported");
-        } catch (IOException ex) {
-            throw new UncheckedIOException(ex);
-        }
+    public void writeInFolder(Path folder) {
+        saveContent(folder.resolve("unsupported.html"));
     }
 
     @Override

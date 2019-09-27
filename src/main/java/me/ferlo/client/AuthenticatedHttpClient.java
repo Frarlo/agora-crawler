@@ -7,13 +7,14 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 @Singleton
-public class LoggedInHttpClient implements HttpClientService {
+public class AuthenticatedHttpClient implements HttpClientService {
 
     private final HttpClientService baseClientService;
     private final CookieService cookieService;
 
-    @Inject LoggedInHttpClient(HttpClientService baseClientService,
-                               CookieService cookieService) {
+    @Inject
+    AuthenticatedHttpClient(HttpClientService baseClientService,
+                            CookieService cookieService) {
         this.baseClientService = baseClientService;
         this.cookieService = cookieService;
     }

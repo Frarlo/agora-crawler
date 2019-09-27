@@ -2,93 +2,62 @@ package me.ferlo.crawler.activities;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import me.ferlo.client.Authenticated;
-import me.ferlo.client.HttpClientService;
-import me.ferlo.crawler.Resource;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import me.ferlo.crawler.download.DownloadService;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.List;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class PageActivity extends Activity {
+public class PageActivity extends ResourceActivity {
 
-    private final HttpClientService httpClientService;
+    protected String content;
 
-    private final String content;
-    private final List<Resource> resources;
-
-    @Inject PageActivity(@Authenticated HttpClientService httpClientService,
-                         @Assisted("name") String name,
-                         @Assisted("href") String href,
-                         @Assisted("type") String type,
-                         @Assisted("indent") int indent,
+    @Inject PageActivity(DownloadService downloadService,
+                         @Assisted("baseData") BaseActivityData baseData,
                          @Assisted("content") String content,
-                         @Assisted("resources") List<Resource> resources) {
-        super(name, href, type, indent);
-
-        this.httpClientService = httpClientService;
+                         @Assisted("resources") Map<Path, String> resources) {
+        super(downloadService, baseData, resources);
 
         this.content = content;
-        this.resources = resources;
+        // Clear and re-add cause the content is set after this action
+        // gets done in the super constructor
+        this.resources.clear();
+        resources.forEach(this::addResource);
     }
 
     public String getContent() {
         return content;
     }
 
-    public List<Resource> getResources() {
-        return resources;
+    @Override
+    public Path addResource(Path path, String url) {
+        path = super.addResource(path, url);
+        if(content != null)
+            content = content.replaceAll(Pattern.quote(url), Matcher.quoteReplacement(path.toString()));
+        return path;
     }
 
     @Override
-    public void writeInFolder(File folder) {
+    public void writeInFolder(Path folder) {
+        this.downloadResources(folder);
+        this.saveContent(folder.resolve("pagina.html"));
+    }
 
-        final String[] contentToSave = { content != null ? content : "" };
-        resources.stream()
-                .filter(r -> r.getHref().contains("agora.ismonnet"))
-                .forEach(toSave -> {
+    protected void saveContent(Path destination) {
+        if(content.equals(""))
+            return;
 
-                    String relativePath = toSave.getPath().trim();
-                    contentToSave[0] = contentToSave[0].replaceAll(Pattern.quote(toSave.getHref()), toSave.getPath());
-
-                    File dest = new File(folder, relativePath);
-
-                    if(!dest.getParentFile().exists())
-                        System.out.println("Creating dir " + dest.getParentFile());
-                    if(!dest.getParentFile().exists() && !dest.getParentFile().mkdirs())
-                        throw new AssertionError("Couldn't create parent directories " + dest.getParentFile() + " for " + dest);
-
-                    System.out.println("Downloading file " + toSave.getHref());
-                    try (CloseableHttpClient client = httpClientService.makeHttpClient()) {
-
-                        HttpGet request = new HttpGet(toSave.getHref());
-                        try(CloseableHttpResponse response = client.execute(request)) {
-                            if(response.getStatusLine().getStatusCode() != 200)
-                                throw new IOException(response.getStatusLine().toString());
-
-                            Files.copy(response.getEntity().getContent(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                        }
-
-                    } catch (IOException e) {
-                        // Don't rethrow cause it tries to download an unknown host at one point (http://map.norsecorp.com)
-                        System.err.println("Couldn't download file " + toSave.getHref());
-                        e.printStackTrace();
-                    }
-                });
-
-        if(!contentToSave[0].equals("")) {
-            File file = new File(folder, "pagina.html");
-
-            try (PrintStream out = new PrintStream(new FileOutputStream(file))) {
-                out.print(contentToSave[0]);
-            } catch (IOException ex) {
-                throw new UncheckedIOException(ex);
-            }
+        try {
+            // Not sure which Charset I should use, I tried UTF-8 and it was all fucked up
+            Files.write(destination, content.getBytes(Charset.defaultCharset()), StandardOpenOption.CREATE);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -96,7 +65,6 @@ public class PageActivity extends Activity {
     public String toString() {
         return "PageActivity{" +
                 "content='" + content + '\'' +
-                ", resources=" + resources +
                 "} " + super.toString();
     }
 }

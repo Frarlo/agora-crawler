@@ -12,13 +12,13 @@ public class ActivityModule extends AbstractModule {
         super.configure();
 
         install(new FactoryModuleBuilder()
-                .implement(Key.get(Activity.class, Names.named("unsupported")), UnsupportedActivity.class)
-                .implement(Key.get(Activity.class, Names.named("assignment")), AssignmentActivity.class)
-                .implement(Key.get(Activity.class, Names.named("folder")), FolderActivity.class)
-                .implement(Key.get(Activity.class, Names.named("resource")), ResourceActivity.class)
-                .implement(Key.get(Activity.class, Names.named("page")), PageActivity.class)
-                .implement(Key.get(Activity.class, Names.named("url")), UrlActivity.class)
-                .implement(Key.get(Activity.class, Names.named("quiz")), QuizActivity.class)
+                .implement(Key.get(Activity.class, Names.named("unsupported_activity")), UnsupportedActivity.class)
+                .implement(Key.get(Activity.class, Names.named("resource_activity")), ResourceActivity.class)
+                .implement(Key.get(Activity.class, Names.named("page_activity")), PageActivity.class)
+                .implement(Key.get(Activity.class, Names.named("url_activity")), UrlActivity.class)
+                .implement(Key.get(Activity.class, Names.named("quiz_activity")), QuizActivity.class)
+                .implement(Key.get(Activity.class, Names.named("assignment_activity")), AssignmentActivity.class)
+                .implement(Key.get(Activity.class, Names.named("folder_activity")), FolderActivity.class)
                 .build(ActivityFactory.class));
     }
 }

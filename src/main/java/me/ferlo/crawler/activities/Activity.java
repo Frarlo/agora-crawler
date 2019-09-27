@@ -1,52 +1,24 @@
 package me.ferlo.crawler.activities;
 
 import com.google.inject.Inject;
-import com.google.inject.assistedinject.Assisted;
 
-import java.io.File;
+import java.nio.file.Path;
 
-public abstract class Activity {
+public abstract class Activity extends BaseActivityData {
 
-    private final String name;
-    private final String href;
-    private final String type;
-    private final int indent;
-
-    @Inject Activity(@Assisted("name") String name,
-                     @Assisted("href") String href,
-                     @Assisted("type") String type,
-                     @Assisted("indent") int indent) {
-        this.name = name;
-        this.href = href;
-        this.type = type;
-        this.indent = indent;
+    @Inject Activity(BaseActivityData baseData) {
+        super(baseData);
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getHref() {
-        return href;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public int getIndent() {
-        return indent;
-    }
-
-    public abstract void writeInFolder(File folder);
+    public abstract void writeInFolder(Path folder);
 
     @Override
     public String toString() {
         return "Activity{" +
-                "name='" + name + '\'' +
-                ", href='" + href + '\'' +
-                ", type='" + type + '\'' +
-                ", indent=" + indent +
+                "name='" + getName() + '\'' +
+                ", href='" + getHref() + '\'' +
+                ", type='" + getType() + '\'' +
+                ", indent=" + getIndent() +
                 '}';
     }
 }

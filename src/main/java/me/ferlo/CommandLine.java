@@ -107,7 +107,7 @@ public class CommandLine {
                                 System.out.println("Creating dir " + activityDir.getAbsolutePath());
                             if(!activityDir.exists() && !activityDir.mkdirs())
                                 throw new AssertionError("Couldn't create dirs " + activityDir);
-                            activity.writeInFolder(activityDir);
+                            activity.writeInFolder(activityDir.toPath());
                         });
                     });
                 });

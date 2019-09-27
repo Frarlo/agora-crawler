@@ -4,12 +4,12 @@ import com.google.inject.Inject;
 import me.ferlo.client.Authenticated;
 import me.ferlo.client.HttpClientService;
 import me.ferlo.crawler.activities.Activity;
-import me.ferlo.crawler.activities.ActivityFactory;
+import me.ferlo.crawler.activities.BaseActivityData;
 import me.ferlo.crawler.category.Category;
 import me.ferlo.crawler.category.CategoryFactory;
 import me.ferlo.crawler.course.Course;
 import me.ferlo.crawler.course.CourseFactory;
-import me.ferlo.crawler.parsers.*;
+import me.ferlo.crawler.parser.ActivityParserService;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -30,16 +30,16 @@ public class Crawler implements CrawlerService {
 
     private final CourseFactory courseFactory;
     private final CategoryFactory categoryFactory;
-    private final ActivityFactory activityFactory;
+    private final ActivityParserService activityParserService;
 
     @Inject Crawler(@Authenticated HttpClientService httpClientService,
                     CourseFactory courseFactory,
                     CategoryFactory categoryFactory,
-                    ActivityFactory activityFactory) {
+                    ActivityParserService activityParserService) {
         this.httpClientService = httpClientService;
         this.courseFactory = courseFactory;
         this.categoryFactory = categoryFactory;
-        this.activityFactory = activityFactory;
+        this.activityParserService = activityParserService;
     }
 
     @Override
@@ -89,7 +89,6 @@ public class Crawler implements CrawlerService {
 
                 final Pattern sectionPattern = Pattern.compile("<h3(?: +)class=\"sectionname\">(?<name>[^<]*)</h3>");
                 final Matcher matcher = sectionPattern.matcher(html);
-
 
                 int startIdx = 0;
                 String previousSectionName = "Generale";
@@ -156,63 +155,16 @@ public class Crawler implements CrawlerService {
                 throw new AssertionError("Invalid indent " + indentString);
             }
 
-            Activity activity = fetchActivity(
+            Activity activity = activityParserService.parse(new BaseActivityData(
                     matcher.group("name"),
                     matcher.group("href"),
                     type,
                     indent
-            );
+            ));
 
             activities.add(activity);
         }
 
         return activities;
     }
-
-    private Activity fetchActivity(String name,
-                                   String href,
-                                   String type,
-                                   int indent) {
-
-        // This is honestly shit but I can't be bothered to design it properly
-
-        switch (type) {
-            case "assign":
-            case "page":
-            case "quiz":
-            case "folder":
-
-                try(CloseableHttpClient client = httpClientService.makeHttpClient()) {
-
-                    System.out.println("Fetching activity (" + type + ") " + href);
-                    HttpGet request = new HttpGet(href);
-                    try(CloseableHttpResponse response = client.execute(request)) {
-
-                        final String html = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))
-                                .lines()
-                                .collect(Collectors.joining("\n"));
-
-                        switch (type) {
-                            case "assign":
-                                return AssignmentParser.parse(activityFactory, name, href, type, indent, html);
-                            case "page":
-                                return PageParser.parse(activityFactory, name, href, type, indent, html);
-                            case "quiz":
-                                return QuizParser.parse(httpClientService, activityFactory, name, href, type, indent, html);
-                            case "folder":
-                                return FolderParser.parse(activityFactory,name,href,type,indent,html);
-                        }
-                    }
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            case "url":
-                return UrlParser.parse(httpClientService, activityFactory, name, href, type, indent);
-            case "resource":
-                return activityFactory.createResource(name, href, type, indent);
-            default:
-                return activityFactory.createUnsupported(name, href, type, indent);
-        }
-    }
-
 }

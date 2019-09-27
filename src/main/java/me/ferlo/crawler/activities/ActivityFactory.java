@@ -1,55 +1,34 @@
 package me.ferlo.crawler.activities;
 
 import com.google.inject.assistedinject.Assisted;
-import me.ferlo.crawler.Resource;
 
 import javax.inject.Named;
-import java.util.List;
+import java.nio.file.Path;
+import java.util.Map;
 
 public interface ActivityFactory {
 
-    @Named("unsupported") Activity createUnsupported(@Assisted("name") String name,
-                                                     @Assisted("href") String href,
-                                                     @Assisted("type") String type,
-                                                     @Assisted("indent") int indent);
+    @Named("unsupported_activity") Activity createUnsupported(@Assisted("baseData") BaseActivityData baseData);
 
-    @Named("assignment") Activity createAssignment(@Assisted("name") String name,
-                                                   @Assisted("href") String href,
-                                                   @Assisted("type") String type,
-                                                   @Assisted("indent") int indent,
-                                                   @Assisted("desc") String desc,
-                                                   @Assisted("resources") List<Resource> resources,
-                                                   @Assisted("submissions") List<Resource> submissions);
+    @Named("resource_activity") Activity createResource(@Assisted("baseData") BaseActivityData baseData);
 
-    @Named("folder") Activity createFolder(@Assisted("name") String name,
-                                           @Assisted("href") String href,
-                                           @Assisted("type") String type,
-                                           @Assisted("indent") int indent,
-                                           @Assisted("folder") List<Resource> folder);
+    @Named("page_activity") Activity createPage(@Assisted("baseData") BaseActivityData baseData,
+                                                @Assisted("content") String content,
+                                                @Assisted("resources") Map<Path, String> resources);
 
-    @Named("resource") Activity createResource(@Assisted("name") String name,
-                                               @Assisted("href") String href,
-                                               @Assisted("type") String type,
-                                               @Assisted("indent") int indent);
+    @Named("url_activity") Activity createUrl(@Assisted("baseData") BaseActivityData baseData,
+                                              @Assisted("content") String content,
+                                              @Assisted("resources") Map<Path, String> resources);
 
-    @Named("page") Activity createPage(@Assisted("name") String name,
-                                       @Assisted("href") String href,
-                                       @Assisted("type") String type,
-                                       @Assisted("indent") int indent,
-                                       @Assisted("content") String content,
-                                       @Assisted("resources") List<Resource> resources);
+    @Named("quiz_activity") Activity createQuiz(@Assisted("baseData") BaseActivityData baseData,
+                                                @Assisted("quizHtml") String quizHtml,
+                                                @Assisted("resources") Map<Path, String> resources);
 
-    @Named("url") Activity createUrl(@Assisted("name") String name,
-                                     @Assisted("href") String href,
-                                     @Assisted("type") String type,
-                                     @Assisted("indent") int indent,
-                                     @Assisted("content") String content,
-                                     @Assisted("resources") List<Resource> resources);
+    @Named("assignment_activity") Activity createAssignment(@Assisted("baseData") BaseActivityData baseData,
+                                                            @Assisted("desc") String desc,
+                                                            @Assisted("resources") Map<Path, String> resources,
+                                                            @Assisted("submissions") Map<Path, String> submissions);
 
-    @Named("quiz") Activity createQuiz(@Assisted("name") String name,
-                                       @Assisted("href") String href,
-                                       @Assisted("type") String type,
-                                       @Assisted("indent") int indent,
-                                       @Assisted("quizHtml") String quizHtml,
-                                       @Assisted("resources") List<Resource> resources);
+    @Named("folder_activity") Activity createFolder(@Assisted("baseData") BaseActivityData baseData,
+                                                    @Assisted("docs") Map<Path, String> docs);
 }
