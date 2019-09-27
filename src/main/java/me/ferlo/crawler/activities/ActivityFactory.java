@@ -21,6 +21,12 @@ public interface ActivityFactory {
                                                    @Assisted("resources") List<Resource> resources,
                                                    @Assisted("submissions") List<Resource> submissions);
 
+    @Named("folder") Activity createFolder(@Assisted("name") String name,
+                                           @Assisted("href") String href,
+                                           @Assisted("type") String type,
+                                           @Assisted("indent") int indent,
+                                           @Assisted("folder") List<Resource> folder);
+
     @Named("resource") Activity createResource(@Assisted("name") String name,
                                                @Assisted("href") String href,
                                                @Assisted("type") String type,

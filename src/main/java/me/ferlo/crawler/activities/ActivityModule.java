@@ -14,6 +14,7 @@ public class ActivityModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(Key.get(Activity.class, Names.named("unsupported")), UnsupportedActivity.class)
                 .implement(Key.get(Activity.class, Names.named("assignment")), AssignmentActivity.class)
+                .implement(Key.get(Activity.class, Names.named("folder")), FolderActivity.class)
                 .implement(Key.get(Activity.class, Names.named("resource")), ResourceActivity.class)
                 .implement(Key.get(Activity.class, Names.named("page")), PageActivity.class)
                 .implement(Key.get(Activity.class, Names.named("url")), UrlActivity.class)

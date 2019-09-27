@@ -9,10 +9,7 @@ import me.ferlo.crawler.category.Category;
 import me.ferlo.crawler.category.CategoryFactory;
 import me.ferlo.crawler.course.Course;
 import me.ferlo.crawler.course.CourseFactory;
-import me.ferlo.crawler.parsers.AssignmentParser;
-import me.ferlo.crawler.parsers.PageParser;
-import me.ferlo.crawler.parsers.QuizParser;
-import me.ferlo.crawler.parsers.UrlParser;
+import me.ferlo.crawler.parsers.*;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -183,10 +180,11 @@ public class Crawler implements CrawlerService {
             case "assign":
             case "page":
             case "quiz":
+            case "folder":
 
                 try(CloseableHttpClient client = httpClientService.makeHttpClient()) {
 
-                    System.out.println("Fetching activity " + href);
+                    System.out.println("Fetching activity (" + type + ") " + href);
                     HttpGet request = new HttpGet(href);
                     try(CloseableHttpResponse response = client.execute(request)) {
 
@@ -201,6 +199,8 @@ public class Crawler implements CrawlerService {
                                 return PageParser.parse(activityFactory, name, href, type, indent, html);
                             case "quiz":
                                 return QuizParser.parse(httpClientService, activityFactory, name, href, type, indent, html);
+                            case "folder":
+                                return FolderParser.parse(activityFactory,name,href,type,indent,html);
                         }
                     }
                 } catch (IOException e) {
