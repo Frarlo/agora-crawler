@@ -44,5 +44,6 @@ public interface ActivityFactory {
                                        @Assisted("href") String href,
                                        @Assisted("type") String type,
                                        @Assisted("indent") int indent,
-                                       @Assisted("quizHtml") String quizHtml);
+                                       @Assisted("quizHtml") String quizHtml,
+                                       @Assisted("resources") List<Resource> resources);
 }
