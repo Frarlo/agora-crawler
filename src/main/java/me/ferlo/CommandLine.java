@@ -5,8 +5,12 @@ import me.ferlo.crawler.CrawlerService;
 import me.ferlo.crawler.category.Category;
 import me.ferlo.crawler.course.Course;
 
-import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
@@ -56,33 +60,48 @@ public class CommandLine {
             selected.add(n);
         }
 
-        File dest = new File("C:\\AgoraCrawler");
-        if(!dest.exists() && !dest.mkdirs())
-            throw new AssertionError("Couldn't create dirs " + dest);
+        final Path root = Paths.get("C:", "AgoraCrawler");
+        try {
+            if(!Files.exists(root)) {
+                System.out.println("Creating dir " + root.toAbsolutePath());
+                Files.createDirectories(root);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
 
         final AtomicInteger n = new AtomicInteger(0);
         IntStream.range(0, crawledCourses.size())
                 .filter(selected::contains)
                 .mapToObj(i -> crawledCourses.get(i - 1))
                 .forEach(course -> {
-                    File courseDir = new File(dest, n.incrementAndGet() + ". " + course.getTitle().replaceAll("[\\\\/:*?\"<>|]", "").trim());
+                    String courseName = n.incrementAndGet() + ". " + course.getTitle().replaceAll("[\\\\/:*?\"<>|]", "").trim();
+                    Path courseDir = root.resolve(courseName);
 
-                    if(!courseDir.exists())
-                        System.out.println("Creating dir " + courseDir.getAbsolutePath());
-                    if(!courseDir.exists() && !courseDir.mkdirs())
-                        throw new AssertionError("Couldn't create dirs " + courseDir);
+                    try {
+                        if(!Files.exists(courseDir)) {
+                            System.out.println("Creating dir " + courseDir.toAbsolutePath());
+                            Files.createDirectories(courseDir);
+                        }
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
 
                     final AtomicInteger categoriesN = new AtomicInteger(0);
-
                     List<Category> categories = crawler.fetchCategories(course.getHref());
                     categories.forEach(category -> {
 
-                        File categoryDir = new File(courseDir, categoriesN.incrementAndGet() + ". " + category.getName().replaceAll("[\\\\/:*?\"<>|]", "").trim());
+                        String categoryName = categoriesN.incrementAndGet() + ". " + category.getName().replaceAll("[\\\\/:*?\"<>|]", "").trim();
+                        Path categoryDir = courseDir.resolve(categoryName);
 
-                        if(!categoryDir.exists())
-                            System.out.println("Creating dir " + categoryDir.getAbsolutePath());
-                        if(!categoryDir.exists() && !categoryDir.mkdirs())
-                            throw new AssertionError("Couldn't create dirs " + categoryDir);
+                        try {
+                            if(!Files.exists(categoryDir)) {
+                                System.out.println("Creating dir " + categoryDir.toAbsolutePath());
+                                Files.createDirectories(categoryDir);
+                            }
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
 
                         LinkedList<Integer> currentNumbers = new LinkedList<>();
                         final AtomicInteger lastIndent = new AtomicInteger(-1);
@@ -102,13 +121,19 @@ public class CommandLine {
                                 folderNumber.append(i).append(".");
                             folderNumber.append(" ");
 
-                            File activityDir = new File(categoryDir, folderNumber.toString() + activity.getName().replaceAll("[\\\\/:*?\"<>|]", "").trim());
+                            String activityName = folderNumber.toString() + activity.getName().replaceAll("[\\\\/:*?\"<>|]", "").trim();
+                            Path activityDir = categoryDir.resolve(activityName);
 
-                            if(!activityDir.exists())
-                                System.out.println("Creating dir " + activityDir.getAbsolutePath());
-                            if(!activityDir.exists() && !activityDir.mkdirs())
-                                throw new AssertionError("Couldn't create dirs " + activityDir);
-                            activity.writeInFolder(activityDir.toPath());
+                            try {
+                                if(!Files.exists(activityDir)) {
+                                    System.out.println("Creating dir " + activityDir.toAbsolutePath());
+                                    Files.createDirectories(activityDir);
+                                }
+                            } catch (IOException e) {
+                                throw new UncheckedIOException(e);
+                            }
+
+                            activity.writeInFolder(activityDir);
                         });
                     });
                 });
