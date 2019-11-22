@@ -130,6 +130,13 @@ public class Crawler implements CrawlerService {
                                         "</span>" +
                                     "</a>" +
                                 "</div>" +
+                                "(?:<div class=\"contentafterlink\">" +
+                                    "<div class=\"no-overflow\">" +
+                                        "<div class=\"no-overflow\">" +
+                                            ".*?" +
+                                        "</div>" +
+                                    "</div>" +
+                                "</div>|)" +
                             "</div>" +
                         "</div>" +
                     "</div>" +
