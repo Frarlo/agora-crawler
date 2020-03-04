@@ -141,12 +141,18 @@ public class Crawler implements CrawlerService {
                             })
                             .map(JSONObject.class::cast)
                             .filter(jsonCourse -> {
-                                if(jsonCourse.get("fullname") != null && jsonCourse.get("fullname") instanceof String)
+                                if(jsonCourse.get("fullname") != null && jsonCourse.get("fullname") instanceof String) {
+                                    jsonCourse.put("___myname___", jsonCourse.get("fullname"));
                                     return true;
-                                if(jsonCourse.get("shortname") != null && jsonCourse.get("shortname") instanceof String)
+                                }
+                                if(jsonCourse.get("shortname") != null && jsonCourse.get("shortname") instanceof String) {
+                                    jsonCourse.put("___myname___", jsonCourse.get("shortname"));
                                     return true;
-                                if(jsonCourse.get("fullnamedisplay") != null && jsonCourse.get("fullnamedisplay") instanceof String)
+                                }
+                                if(jsonCourse.get("fullnamedisplay") != null && jsonCourse.get("fullnamedisplay") instanceof String) {
+                                    jsonCourse.put("___myname___", jsonCourse.get("fullnamedisplay"));
                                     return true;
+                                }
                                 System.err.println("Course missing name: '" + jsonCourse + "'");
                                 return false;
                             })
@@ -157,7 +163,7 @@ public class Crawler implements CrawlerService {
                                 return false;
                             })
                             .map(jsonCourse -> courseFactory.create(
-                                    (String) jsonCourse.get("fullname"),
+                                    (String) jsonCourse.get("___myname___"),
                                     (String) jsonCourse.get("viewurl")))
                             .collect(Collectors.toList());
                 } catch (Exception ex) {
