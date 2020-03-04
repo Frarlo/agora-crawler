@@ -110,7 +110,7 @@ public class CommandLine {
 
                             if(activity.getIndent() > lastIndent.get())
                                 currentNumbers.add(0);
-                            if(activity.getIndent() < lastIndent.get())
+                            if(activity.getIndent() < lastIndent.get() && currentNumbers.size() >= 2)
                                 currentNumbers.removeLast();
                             lastIndent.set(activity.getIndent());
 
