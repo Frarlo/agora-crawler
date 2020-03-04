@@ -32,6 +32,7 @@ public class LoginCookieFetcher implements CookieService {
     private final String password;
 
     private CookieStore cookie;
+    private String sessKey;
 
     @Inject LoginCookieFetcher(HttpClientService httpClientService,
                                 @Username String username,
@@ -46,11 +47,18 @@ public class LoginCookieFetcher implements CookieService {
     @Override
     public CookieStore getCookies() {
         if(cookie == null)
-            cookie = fetchCookie();
+            fetchCookie();
         return cookie;
     }
 
-    private CookieStore fetchCookie() {
+    @Override
+    public String getSessKey() {
+        if(sessKey == null)
+            fetchCookie();
+        return sessKey;
+    }
+
+    private void fetchCookie() {
 
         final CookieStore cookieStore = new BasicCookieStore();
 
@@ -90,7 +98,18 @@ public class LoginCookieFetcher implements CookieService {
             request.setEntity(new UrlEncodedFormEntity(params));
 
             try(CloseableHttpResponse response = client.execute(request)) {
-                return cookieStore;
+
+                final String html = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))
+                        .lines()
+                        .collect(Collectors.joining("\n"));
+
+                final Pattern sessKeyPattern = Pattern.compile("\"sesskey\":\"(?<sesskey>.*?)\"");
+                final Matcher matcher = sessKeyPattern.matcher(html);
+                if(!matcher.find())
+                    throw new IOException("Coudln't find sessKey");
+
+                this.sessKey = matcher.group("sesskey");
+                this.cookie = cookieStore;
             }
 
         } catch (IOException e) {

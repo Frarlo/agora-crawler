@@ -3,8 +3,6 @@ package me.ferlo.client;
 import com.google.inject.Singleton;
 import me.ferlo.cookie.LoginCookieFetcher;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
@@ -20,8 +18,8 @@ import java.security.cert.CertificateFactory;
 public class LetsEncryptHttpClient implements HttpClientService {
 
     @Override
-    public HttpClientBuilder makeHttpClientBuilder() {
-        final HttpClientBuilder clientBuilder = HttpClients.custom();
+    public MyHttpClientBuilder makeHttpClientBuilder() {
+        final MyHttpClientBuilder clientBuilder = new MyHttpClientBuilder();
         clientBuilder.setSSLContext(getLetsEncryptSSLCtx());
         return clientBuilder;
     }
