@@ -234,6 +234,9 @@ public class Crawler implements CrawlerService {
                                         "</span>" +
                                     "</a>" +
                                 "</div>" +
+                                "(?:<span class=\"actions\">" +
+                                    ".*?" +
+                                "</span>|)" +
                                 "(?:<div class=\"contentafterlink\">" +
                                     "<div class=\"no-overflow\">" +
                                         "<div class=\"no-overflow\">" +
@@ -244,7 +247,7 @@ public class Crawler implements CrawlerService {
                             "</div>" +
                         "</div>" +
                     "</div>" +
-                "</li>");
+                "</li>", Pattern.DOTALL);
                 //@formatter:on
 
         Matcher matcher = activityPattern.matcher(html);
